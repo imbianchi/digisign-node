@@ -78,16 +78,29 @@
                 contentType: false,
                 processData: false,
                 success: async function (data) {
-                    setTimeout(function () {
-                        window.location.href = '/download';
-                    }, 100);
 
-                    document.getElementById('directoryInput').value = '';
-                    document.getElementById('pfxFile').value = '';
+                    if (await data === 'OK') {
+                        $.ajax({
+                            url: '/download',
+                            type: 'GET',
+                            contentType: false,
+                            processData: false,
+                            success: async function (data) {
 
-                    setTimeout(function () {
-                        location.reload();
-                    }, 5000);
+                                if (await data === 'OK') {
+                                    document.getElementById('directoryInput').value = '';
+                                    document.getElementById('pfxFile').value = '';
+
+                                    setTimeout(function () {
+                                        location.reload();
+                                    }, 5000);
+                                }
+                            },
+                            error: function (error) {
+                                console.error('Error:', error);
+                            }
+                        });
+                    }
                 },
                 error: function (error) {
                     console.error('Error:', error);
