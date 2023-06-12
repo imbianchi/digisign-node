@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Assinar PDFs</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" />
+</head>
+
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-8 mt-3">
+                <form id="uploadForm" enctype="multipart/form-data">
+                    <div class="row">
+                        <div class="form-group">
+                            <label for="files">Diretório PDFs </label>
+                            <input type="file" name="files" id="directoryInput" webkitdirectory required>
+                        </div>
+                    </div>
+                    <hr />
+
+                    <div class="row">
+                        <div class="form-group">
+                            <label for="pfxFile">Certificado (arquivo pfx ou p12) </label>
+                            <input type="file" name="pfxFile" id="pfxFile" required>
+                        </div>
+                    </div>
+                    <hr />
+
+                    <div class="row">
+                        <div class="form-group">
+                            <label for="example-input-file">Senha certificado</label>
+                            <input type="password" id="password" name="password" required>
+                        </div>
+                    </div>
+                    <hr />
+
+                    <div class="row">
+                        <button type="submit" class="btn btn-primary">Assinar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
+</body>
+
+<script>
+    $(document).ready(function () {
+        $.ajax({
+            url: '/delete-files',
+            type: 'GET',
+            contentType: false,
+            processData: false,
+            success: async function (data) { },
+            error: function (error) {
+                console.error('Error:', error);
+            }
+        });
+    })
+
+    $(document).ready(function () {
+        $('#uploadForm').submit(function (e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const directoryInput = document.getElementById('directoryInput');
+            const files = directoryInput.files;
+
+            $.ajax({
+                url: '/upload-files',
+                type: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: async function (data) {
+                    setTimeout(function () {
+                        window.location.href = '/download';
+                    }, 100);
+
+                    document.getElementById('directoryInput').value = '';
+                    document.getElementById('pfxFile').value = '';
+
+                    setTimeout(function () {
+                        location.reload();
+                    }, 3000);
+                },
+                error: function (error) {
+                    console.error('Error:', error);
+                }
+            });
+        });
+    });
+</script>
+
+</html>
