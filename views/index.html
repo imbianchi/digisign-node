@@ -41,6 +41,9 @@
                     <div class="row">
                         <button type="submit" class="btn btn-primary">Enviar</button>
                     </div>
+                    <div class="spinner-border text-primary hide spinner-upload" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
                 </form>
             </div>
         </div>
@@ -48,7 +51,13 @@
 
         <div class="row">
             <button type="button" class="btn btn-secondary download-button hide">Fazer download dos arquivos</button>
+            <div class="spinner-border text-primary hide spinner-download" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
             <button type="button" class="btn btn-danger reset-button hide">Resetar/Novo</button>
+            <div class="spinner-border text-primary hide spinner-reset" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
         </div>
     </div>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -62,9 +71,31 @@
 </style>
 
 <script>
+    function resetFiles() {
+        $.ajax({
+            url: '/delete-files',
+            type: 'GET',
+            contentType: false,
+            processData: false,
+            success: async function (data) {
+                if (await data === 'OK') {
+                    document.getElementById('directoryInput').value = '';
+                    document.getElementById('pfxFile').value = '';
+                }
+            },
+            error: function (error) {
+                console.error('Error:', error);
+            }
+        });
+    }
+
     $(document).ready(function () {
+        // resetFiles();
+
         $('#uploadForm').submit(function (e) {
             e.preventDefault();
+
+            $('.spinner-upload').removeClass('hide')
 
             const formData = new FormData(this);
             const directoryInput = document.getElementById('directoryInput');
@@ -79,6 +110,8 @@
                 success: async function (data) {
                     if (await data === 'OK') {
                         $('.download-button').removeClass('hide')
+                        $('.spinner-upload').addClass('hide')
+
                     }
                 },
                 error: function (error) {
@@ -88,30 +121,20 @@
         });
 
         $('.download-button').click(function () {
+            $('.spinner-download').removeClass('hide')
+
             window.location.href = '/download'
+
             $('.download-button').addClass('hide')
 
             $('.reset-button').removeClass('hide')
+            $('.spinner-download').addClass('hide')
         })
 
         $('.reset-button').click(function () {
-            $.ajax({
-                url: '/delete-files',
-                type: 'GET',
-                contentType: false,
-                processData: false,
-                success: async function (data) {
-                    if (await data === 'OK') {
-                        document.getElementById('directoryInput').value = '';
-                        document.getElementById('pfxFile').value = '';
+            resetFiles();
 
-                        location.reload();
-                    }
-                },
-                error: function (error) {
-                    console.error('Error:', error);
-                }
-            });
+            location.reload();
         })
     });
 </script>
