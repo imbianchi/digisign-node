@@ -39,30 +39,29 @@
                     <hr />
 
                     <div class="row">
-                        <button type="submit" class="btn btn-primary">Assinar</button>
+                        <button type="submit" class="btn btn-primary">Enviar</button>
                     </div>
                 </form>
             </div>
+        </div>
+        <hr />
+
+        <div class="row">
+            <button type="button" class="btn btn-secondary download-button hide">Fazer download dos arquivos</button>
+            <button type="button" class="btn btn-danger reset-button hide">Resetar/Novo</button>
         </div>
     </div>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
 </body>
 
-<script>
-    $(document).ready(function () {
-        $.ajax({
-            url: '/delete-files',
-            type: 'GET',
-            contentType: false,
-            processData: false,
-            success: async function (data) { },
-            error: function (error) {
-                console.error('Error:', error);
-            }
-        });
-    })
+<style>
+    .hide {
+        display: none;
+    }
+</style>
 
+<script>
     $(document).ready(function () {
         $('#uploadForm').submit(function (e) {
             e.preventDefault();
@@ -78,28 +77,8 @@
                 contentType: false,
                 processData: false,
                 success: async function (data) {
-
                     if (await data === 'OK') {
-                        $.ajax({
-                            url: '/download',
-                            type: 'GET',
-                            contentType: false,
-                            processData: false,
-                            success: async function (data) {
-
-                                if (await data === 'OK') {
-                                    document.getElementById('directoryInput').value = '';
-                                    document.getElementById('pfxFile').value = '';
-
-                                    setTimeout(function () {
-                                        location.reload();
-                                    }, 5000);
-                                }
-                            },
-                            error: function (error) {
-                                console.error('Error:', error);
-                            }
-                        });
+                        $('.download-button').removeClass('hide')
                     }
                 },
                 error: function (error) {
@@ -107,6 +86,33 @@
                 }
             });
         });
+
+        $('.download-button').click(function () {
+            window.location.href = '/download'
+            $('.download-button').addClass('hide')
+
+            $('.reset-button').removeClass('hide')
+        })
+
+        $('.reset-button').click(function () {
+            $.ajax({
+                url: '/delete-files',
+                type: 'GET',
+                contentType: false,
+                processData: false,
+                success: async function (data) {
+                    if (await data === 'OK') {
+                        document.getElementById('directoryInput').value = '';
+                        document.getElementById('pfxFile').value = '';
+
+                        location.reload();
+                    }
+                },
+                error: function (error) {
+                    console.error('Error:', error);
+                }
+            });
+        })
     });
 </script>
 

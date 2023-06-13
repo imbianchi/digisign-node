@@ -31,6 +31,8 @@ const downloadFiles = async (req, res) => {
             }
         });
 
+        console.log(zip, '-0-0-0-0=--=-=-=')
+
         // Finalize the zip archive
         zip.finalize((err) => {
             if (err) {
@@ -44,6 +46,8 @@ const downloadFiles = async (req, res) => {
 }
 
 const eraseDownloadedFiles = async (req, res) => {
+    await eraseDirectory('./temp-files');
+
     await eraseDirectory('./signed');
 
     res.send('OK');

@@ -12,7 +12,6 @@ const {
 
 const SIGNATURE_LENGTH = 5540;
 const PDFArrayCustom = require('../utils/PDFArrayCustom');
-const { eraseDirectory } = require('../utils/files');
 
 const mimePFXfile = 'application/x-pkcs12';
 const mimeP12file = 'application/pkcs12';
@@ -119,8 +118,6 @@ const multipleUpload = async (req, res) => {
     } catch (error) {
         console.log(error);
     }
-
-    await eraseDirectory('./temp-files');
 
     res.send('OK')
 }
