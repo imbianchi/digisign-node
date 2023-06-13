@@ -31,8 +31,6 @@ const downloadFiles = async (req, res) => {
             }
         });
 
-        console.log(zip, '-0-0-0-0=--=-=-=')
-
         // Finalize the zip archive
         zip.finalize((err) => {
             if (err) {
