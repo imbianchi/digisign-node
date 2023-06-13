@@ -127,8 +127,10 @@
 
             $('.download-button').addClass('hide')
 
-            $('.reset-button').removeClass('hide')
-            $('.spinner-download').addClass('hide')
+            setTimeout(function () {
+                $('.spinner-download').addClass('hide')
+                $('.reset-button').removeClass('hide')
+            }, 1500)
         })
 
         $('.reset-button').click(function () {
