@@ -3,6 +3,8 @@ const path = require('path');
 const archiver = require('archiver');
 const { eraseDirectory } = require('../utils/files');
 
+const TEST_KEY = 'gh_sdj39u87d32iuhr2$#REWDF#45y3q4675rYTYHJË%W%AQ5$63t'
+
 const downloadFiles = async (req, res) => {
     const directoryPath = './signed';
 
