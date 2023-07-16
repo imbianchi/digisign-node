@@ -3,11 +3,14 @@ const bodyParser = require('body-parser');
 const app = express();
 const initRoutes = require("./routes");
 
+// EXPRESS - ROUTES - DIR - CONFIGURATIONS
 app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(express.static(__dirname));
 initRoutes(app);
 
-
-app.listen(process.env.PORT,
+// END OF CONFIGS - SERVER
+const server = require('http').Server(app);
+server.listen(process.env.PORT,
     () => console.log('Server is running on port: ' + process.env.PORT || '4000')
 );

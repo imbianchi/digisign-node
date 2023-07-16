@@ -5,140 +5,82 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>Assinar PDFs</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" />
+    <title>Assinatura Digital</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <link rel="stylesheet" href="static/font-awesome-4.7.0/css/font-awesome.min.css">
+
+    <link rel="stylesheet" href="static/css/styles.css">
 </head>
 
 <body>
+    <div class="container p-5">
+        <div class="row text-center d-flex justify-content-center">
+            <h3 class="title-page">Assinatura Digital PDFs</h3>
+        </div>
+    </div>
     <div class="container">
         <div class="row">
-            <div class="col-sm-8 mt-3">
+            <div class="col-12 mt-3 d-flex justify-content-center">
                 <form id="uploadForm" enctype="multipart/form-data">
-                    <div class="row">
-                        <div class="form-group">
-                            <label for="files">Diretório PDFs </label>
+
+                    <div class="form-group w-100 pt-5">
+                        <div class="d-flex flex-column">
+                            <label for="files" class="font-weight-bold">Selecionar PDFs: </label>
                             <input type="file" name="files" id="directoryInput" webkitdirectory required>
                         </div>
                     </div>
                     <hr />
 
-                    <div class="row">
-                        <div class="form-group">
-                            <label for="pfxFile">Certificado (arquivo pfx ou p12) </label>
+                    <div class="form-group w-100 pt-5">
+                        <div class="d-flex flex-column w-100">
+                            <label for="pfxFile" class="font-weight-bold">Certificado (arquivo pfx ou p12): </label>
                             <input type="file" name="pfxFile" id="pfxFile" required>
                         </div>
                     </div>
                     <hr />
 
-                    <div class="row">
-                        <div class="form-group">
-                            <label for="example-input-file">Senha certificado</label>
-                            <input type="password" id="password" name="password" required>
+                    <div class="form-group w-100 pt-5">
+                        <div class="d-flex flex-column w-100">
+                            <label class="font-weight-bold">Senha certificado:</label>
+                            <input type="password" class="form-control" name="password" placeholder="senha" required>
                         </div>
                     </div>
                     <hr />
 
-                    <div class="row">
-                        <button type="submit" class="btn btn-primary">Enviar</button>
+                    <div class="d-flex justify-content-center mt-4">
+                        <button type="submit" class="btn btn-primary mr-3">
+                            <span>Assinar PDFs</span>
+                            <div class="spinner-border text-light spinner-reset hide" role="status"></div>
+                        </button>
+                        <button type="button" class="btn btn-info hide">Download PDFs</button>
                     </div>
-                    <div class="spinner-border text-primary hide spinner-upload" role="status">
-                        <span class="sr-only">Loading...</span>
+                    <div class="d-flex justify-content-center mt-2">
+                        <button type="button" class="btn btn-dark reset-button hide">Limpar tudo</button>
                     </div>
+
                 </form>
             </div>
         </div>
-        <hr />
+    </div>
 
-        <div class="row">
-            <button type="button" class="btn btn-secondary download-button hide">Fazer download dos arquivos</button>
-            <div class="spinner-border text-primary hide spinner-download" role="status">
-                <span class="sr-only">Loading...</span>
+    <div class="toast-container position-fixed top-0 start-0 p-3">
+        <div id="toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <strong class="me-auto"></strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
             </div>
-            <button type="button" class="btn btn-danger reset-button hide">Resetar/Novo</button>
-            <div class="spinner-border text-primary hide spinner-reset" role="status">
-                <span class="sr-only">Loading...</span>
-            </div>
+            <div class="toast-body"></div>
         </div>
     </div>
+
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
+        crossorigin="anonymous"></script>
+    <script src="static/js/index.js"></script>
 </body>
-
-<style>
-    .hide {
-        display: none;
-    }
-</style>
-
-<script>
-    function resetFiles() {
-        $.ajax({
-            url: '/delete-files',
-            type: 'GET',
-            contentType: false,
-            processData: false,
-            success: async function (data) {
-                if (await data === 'OK') {
-                    document.getElementById('directoryInput').value = '';
-                    document.getElementById('pfxFile').value = '';
-                }
-            },
-            error: function (error) {
-                console.error('Error:', error);
-            }
-        });
-    }
-
-    $(document).ready(function () {
-        resetFiles();
-
-        $('#uploadForm').submit(function (e) {
-            e.preventDefault();
-
-            $('.spinner-upload').removeClass('hide')
-
-            const formData = new FormData(this);
-            const directoryInput = document.getElementById('directoryInput');
-            const files = directoryInput.files;
-
-            $.ajax({
-                url: '/upload-files',
-                type: 'POST',
-                data: formData,
-                contentType: false,
-                processData: false,
-                success: async function (data) {
-                    if (await data === 'OK') {
-                        $('.download-button').removeClass('hide')
-                        $('.spinner-upload').addClass('hide')
-
-                    }
-                },
-                error: function (error) {
-                    console.error('Error:', error);
-                }
-            });
-        });
-
-        $('.download-button').click(function () {
-            $('.spinner-download').removeClass('hide')
-
-            window.location.href = '/download'
-
-            $('.download-button').addClass('hide')
-
-            setTimeout(function () {
-                $('.spinner-download').addClass('hide')
-                $('.reset-button').removeClass('hide')
-            }, 10000)
-        })
-
-        $('.reset-button').click(function () {
-            resetFiles();
-
-            location.reload();
-        })
-    });
-</script>
 
 </html>

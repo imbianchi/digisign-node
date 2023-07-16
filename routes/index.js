@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const homeController = require("../controllers/home");
+const path = require('path');
 const uploadController = require("../controllers/upload");
 const downloadController = require("../controllers/download");
 const multer = require('multer');
@@ -14,11 +14,11 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 let routes = app => {
-    router.get("/", homeController.getHome);
+    router.get("/", (req, res) => res.sendFile(path.join(`${__dirname}/../views/index.html`)));
 
-    router.get('/download', downloadController.downloadFiles)
+    router.get('/download', downloadController.downloadSignedFiles)
 
-    router.post("/upload-files", upload.any(), uploadController.multipleUpload);
+    router.post("/sign-and-zip-files", upload.any(), uploadController.signAndZipFiles);
 
     router.get("/delete-files", downloadController.eraseDownloadedFiles);
 

@@ -27,6 +27,10 @@ async function eraseDirectory(directoryPath) {
     });
 }
 
+const setTimeToCleanDirectory = (directory, time) => {
+    
+}
+
 module.exports = {
     eraseDirectory
 }
