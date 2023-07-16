@@ -61,10 +61,19 @@ const signAndZipFiles = async (req, res) => {
         } catch (error) {
             reject(error);
         }
-    });
+    }).then(result => result)
+        .catch(err => {
+            return {
+                error: err,
+                message: err.message,
+                status: 400,
+            }
+        });
 
-    if (!await pdfsIsSigned) {
-        return res.status(500).json(error);
+    const result = await pdfsIsSigned;
+
+    if (result.status == 400) {
+        return res.status(result.status).json(await pdfsIsSigned);
     }
 
     return res.json(await zipFiles(req, res));

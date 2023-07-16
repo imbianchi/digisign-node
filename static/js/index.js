@@ -1,7 +1,3 @@
-let keepCertificate = false;
-let keepPswd = false;
-let certificatePswd = '';
-
 const toast = document.getElementById('toast')
 const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toast)
 
@@ -40,7 +36,7 @@ $(document).ready(function () {
                     'background-color': 'tomato',
                     'color': 'white'
                 })
-                $('#toast .toast-header strong').text(error.responseJSON.error);
+                $('#toast .toast-header strong').text(error.statusText);
                 $('#toast .toast-body').text(error.responseJSON.message);
             }
         });

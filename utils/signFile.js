@@ -80,17 +80,22 @@ const eSignDocs = async (file, pswd, certificate) => {
         const modifiedPdfBuffer = Buffer.from(modifiedPdfBytes);
 
         const signObj = new signer.SignPdf();
-        const signedPdfBuffer = signObj.sign(modifiedPdfBuffer, certificate, {
-            passphrase: pswd,
-        });
+        let signedPdfBuffer;
 
-        // Write the signed file
+        try {
+            signedPdfBuffer = signObj.sign(modifiedPdfBuffer, certificate, {
+                passphrase: pswd,
+            })
+        } catch (error) {
+            throw error;
+        }
+
         fs.writeFileSync(`./signed/${file.originalname}`, signedPdfBuffer);
-    } catch (error) {
-        throw {
-            error: 'Internal Server Error',
-            message: 'Something went wrong'
-        };
+    } catch (error) {        
+        const err = error.toString()
+        if (err.includes('Invalid password')) {
+            throw Error('Password inválido');
+        }
     }
 }
 
