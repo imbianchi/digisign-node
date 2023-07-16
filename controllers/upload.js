@@ -73,10 +73,11 @@ const signAndZipFiles = async (req, res) => {
     const result = await pdfsIsSigned;
 
     if (result.status == 400) {
-        return res.status(result.status).json(await pdfsIsSigned);
+        res.status(result.status).json(await pdfsIsSigned);
+    } else {
+        res.json(await zipFiles(req, res));
     }
 
-    return res.json(await zipFiles(req, res));
 }
 
 module.exports = {
