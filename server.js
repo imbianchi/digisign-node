@@ -11,6 +11,6 @@ initRoutes(app);
 
 // END OF CONFIGS - SERVER
 const server = require('http').Server(app);
-server.listen(process.env.PORT,
-    () => console.log('Server is running on port: ' + process.env.PORT || '4000')
+server.listen(4000,
+    () => console.log('Server is running on port: 4000')
 );
