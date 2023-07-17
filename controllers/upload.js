@@ -51,13 +51,19 @@ const signAndZipFiles = async (req, res) => {
 
     const certificateBuffer = fs.readFileSync(certificate[0].path);
 
+    const err = {};
     try {
         for (const pdf of pdfs) {
             await eSignDocs(pdf, pswd, certificateBuffer);
         }
     } catch (error) {
+        err.status = 400;
+        err.message = error.message;
+    }
+
+    if (err.status) {
         return res.status(400).json({
-            message: error.message,
+            message: err.message,
         });
     }
 
