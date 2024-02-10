@@ -4,76 +4,64 @@ const { eraseDirectory } = require('../utils/files');
 var archiver = require('archiver');
 
 
-const handleZipSignedFiles = async () => {
-    const filesZip = new Promise((resolve, reject) => {
-        fs.readdir('./signed', (err, files) => {
-            if (err) {
-                console.error('Error reading directory:', err);
-                return reject(err)
-            }
+const zipFiles = async (nameRootFileZip, nameZipFile) => {
+    const zipFilePath = path.join('static', 'download', `${nameZipFile}-signed.zip`);
+    let output;
 
-            const filesToZip = []
-            files.forEach((file) => {
-                const filePath = path.join('./signed', file);
+    new Promise((resolve, reject) => {
 
-                if (fs.statSync(filePath).isFile() && file.includes('pdf')) {
-                    filesToZip.push({ path: filePath, file });
-                }
-            });
+        try {
+            output = fs.createWriteStream(zipFilePath);
+        } catch (error) {
+            console.log('Error creating zip file:', error);
+            reject(error);
+        }
 
-            resolve(filesToZip);
+        const zip = archiver('zip', {
+            zlib: { level: 9 } // Sets the compression level.
         });
-    });
 
-    return await filesZip;
-}
+        function addDirectory(dir) {
+            const files = fs.readdirSync(dir);
 
-const zipFiles = async () => {
-    const directoryPath = path.join('static', 'download');
-    const zipName = new Date().getTime() + '-signed.zip';
-    const zipFilePath = directoryPath + '/' + zipName
+            for (const file of files) {
+                const filePath = path.join(dir, file);
+                const stats = fs.statSync(filePath);
 
-    const output = fs.createWriteStream(zipFilePath);
-    const zip = archiver('zip', {
-        zlib: { level: 9 }
-    });
+                if (stats.isDirectory()) {
+                    zip.directory(filePath, file); // Add directory entry
+                    addDirectory(filePath); // Recursively call for nested directories
+                } else {
+                    zip.file(filePath, { name: file }); // Add file entry
+                }
+            }
+        }
 
-    const filesToZip = await handleZipSignedFiles();
+        addDirectory(nameRootFileZip);
 
-    filesToZip.forEach(file => {
-        zip.file(file.path, { name: file.file });
-    });
-
-    const isOutputClosed = new Promise((resolve, reject) => {
         zip.pipe(output);
-
         zip.finalize();
 
-        output.on('close', function () {
-            resolve({
-                message: "Files signed with success!",
-                status: 200,
-                data: { zipName }
-            })
+        output.on('close', () => {
+            console.log('Zip file created successfully!');
+        });
+
+        output.on('end', function () {
+            console.log('Data has been drained');
+        });
+
+        output.on('error', function (err) {
+            console.error('Error writing zip:', err);
         });
 
         output.on('warning', function (err) {
             if (err.code === 'ENOENT') {
                 console.log(err);
             }
-
-            reject();
         });
 
+        resolve();
     });
-
-    const outputData = await isOutputClosed;
-
-    return outputData ? outputData : {
-        error: outputData,
-        status: 500,
-        message: 'Something went wrong. Try again later.'
-    }
 }
 
 const eraseDownloadedFiles = async (req, res) => {
@@ -85,9 +73,7 @@ const eraseDownloadedFiles = async (req, res) => {
 }
 
 const downloadSignedFiles = async (req, res) => {
-    const { zipToDownload } = req.query
-    const filePath = path.join('static', 'download', '/');
-    const zipFilePath = filePath + zipToDownload;
+    const filePath = path.join('static', 'download');
 
     const zipFounded = new Promise((resolve, reject) => {
         fs.readdir(filePath, (err, files) => {
@@ -97,7 +83,7 @@ const downloadSignedFiles = async (req, res) => {
             }
 
             files.forEach((file) => {
-                if (fs.statSync(path.join(filePath, file)).isFile() && file.includes(zipToDownload)) {
+                if (fs.statSync(path.join(filePath, file)).isFile() && file.includes(req.query.zipToDownload)) {
                     resolve(file);
                 }
             });
@@ -105,15 +91,11 @@ const downloadSignedFiles = async (req, res) => {
     })
 
     if (await zipFounded) {
-        res.download(zipFilePath, (err) => {
+        res.download(filePath + '/' + await zipFounded, (err) => {
             if (err) {
                 console.error('Error downloading file:', err);
                 res.status(500).send('Error downloading file');
             }
-
-            setTimeout(() => {
-                eraseDownloadedFiles();
-            }, 2000)
         });
     }
 
