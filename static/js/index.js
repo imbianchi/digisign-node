@@ -4,11 +4,12 @@ const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toast)
 $(document).ready(function () {
     $('#uploadForm').submit(function (e) {
         e.preventDefault();
+        $('#spinner-overlay').removeClass('hide');
 
         const formData = new FormData(this);
 
         $.ajax({
-            url: '/sign-and-zip-files',
+            url: '/process-files',
             type: 'POST',
             data: formData,
             contentType: false,
@@ -28,10 +29,15 @@ $(document).ready(function () {
                 })
 
                 document.getElementById('directoryInput').value = '';
+
+                $('#button-clear').removeClass('hide');
+                $('#button-download').removeClass('hide');
+                $('#spinner-overlay').addClass('hide');
             },
             error: function (error) {
                 toastBootstrap.show()
 
+                $('#spinner-overlay').addClass('hide');
                 $('#toast .toast-header').css({
                     'background-color': 'tomato',
                     'color': 'white'

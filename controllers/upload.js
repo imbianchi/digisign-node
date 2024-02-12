@@ -1,7 +1,7 @@
 const fs = require('fs');
 const AdmZip = require('adm-zip');
 const path = require('path');
-const { dir } = require('console');
+var archiver = require('archiver');
 const { eSignDocs } = require('../utils/signFile');
 
 const mimePFXfile = 'application/x-pkcs12';
@@ -16,7 +16,7 @@ async function processZipEntries() {
     const zip = new AdmZip(zipFilePath);
     const entries = zip.getEntries();
 
-    new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
         entries.forEach(entry => {
             if (dirToZipRoot === '') {
                 dirToZipRoot = entry.entryName.split('/')[0];
@@ -36,7 +36,7 @@ async function processZipEntries() {
             }
         });
 
-        resolve();
+        resolve(true);
     });
 }
 
@@ -60,7 +60,7 @@ async function validateFiles() {
 }
 
 async function digitalSignPDFs(dirPath) {
-    new Promise(async (resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
         const files = fs.readdirSync(dirPath, { recursive: true });
 
         for (const file of files) {
@@ -73,6 +73,67 @@ async function digitalSignPDFs(dirPath) {
                 await eSignDocs(file, pswd, certificate[0].path, dirToZipRoot);
             }
         }
+
+        resolve(true);
+    });
+}
+
+async function zipFiles(nameZipFile, dirToZip) {
+    const zipFilePath = path.join('static', 'download', nameZipFile);
+    let output;
+
+    new Promise((resolve, reject) => {
+        try {
+            output = fs.createWriteStream(zipFilePath);
+        } catch (error) {
+            console.log('Error creating zip file:', error);
+            reject(error);
+        }
+
+        const zip = archiver('zip', {
+            zlib: { level: 9 }
+        });
+
+        function addDirectory(dir) {
+            const files = fs.readdirSync(dir, { recursive: true });
+
+            for (const file of files) {
+                const filePath = path.join(dir, file);
+                const stats = fs.statSync(filePath);
+
+                if (stats.isDirectory()) {
+                    zip.directory(file);
+                    addDirectory(filePath);
+                } else {
+                    if (dir === dirToZip) {
+                        zip.file(filePath, { name: file });
+                    }
+                }
+            }
+        }
+
+        addDirectory(dirToZip);
+
+        zip.pipe(output);
+        zip.finalize();
+
+        output.on('close', () => {
+            console.log('Zip file created successfully!');
+        });
+
+        output.on('end', function () {
+            console.log('Data has been drained');
+        });
+
+        output.on('error', function (err) {
+            console.error('Error writing zip:', err);
+        });
+
+        output.on('warning', function (err) {
+            if (err.code === 'ENOENT') {
+                console.log(err);
+            }
+        });
 
         resolve();
     });
@@ -113,45 +174,28 @@ const processFiles = async (req, res) => {
         });
     }
 
-    // ZIP ALL FILES FROM SIGNED DIR
+    try {
+        await zipFiles(zipName, 'signed/' + dirToZipRoot);
+    } catch (error) {
+        console.error('Error zipping signed files:', error);
 
-    // CREATE A ZIP FILE WITH ALL SIGNED FILES AND SAVE IT IN THE DOWNLOAD DIR
+        return res.status(500).json({
+            message: error.message
+        });
+    }
 
     // DELETE ALL FILES FROM TEMP-FILES
 
     // DELETE ALL FILES FROM SIGNED
 
-    // const err = {};
-
-    // try {
-    //     await processFiles(nameRootFileZip, pswd, certificateBuffer, nameZipFile);
-    // } catch (error) {
-    //     console.error(`Error reading directory: ${nameRootFileZip}`, error);
-    //     err.status = 400;
-    //     err.message = error.message;
-    // }
-
-    // try {
-    //     await zipFiles(nameRootFileZip, nameZipFile);
-    // } catch (error) {
-    //     err.message = error.message;
-    //     err.status = 500;
-    // }
-
-    // if (err.status) {
-    //     return res.status(err.status).json({
-    //         message: err.message,
-    //     });
-    // }
-
-    // setTimeout(() => {
-    //     return res.status(200).json({
-    //         message: 'Files signed with success!',
-    //         data: {
-    //             zipName: `${nameZipFile}-signed.zip`
-    //         }
-    //     });
-    // }, 2000);
+    setTimeout(() => {
+        return res.status(200).json({
+            message: 'Files signed with success!',
+            data: {
+                zipName
+            }
+        });
+    }, 2000);
 }
 
 module.exports = {

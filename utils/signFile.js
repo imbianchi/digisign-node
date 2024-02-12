@@ -92,7 +92,6 @@ const eSignDocs = async (filePath, pswd, certificate, dirRoot) => {
         }
 
         try {
-            console.log('filePath:', `signed/${dirRoot}/${filePath}`);
             fs.writeFileSync(`signed/${dirRoot}/${filePath}`, signedPdfBuffer,  { recursive: true });
         } catch (error) {
             console.error('Error writing file:', error);

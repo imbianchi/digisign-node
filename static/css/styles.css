@@ -1,5 +1,5 @@
 .hide {
-    display: none;
+    display: none !important;
 }
 
 
@@ -21,8 +21,6 @@
     background-color: #ddd;
 }
 
-
-
 .custom-file-input:lang(pt)~.custom-file-label::after {
     content: "TEste";
     color: black;
@@ -30,3 +28,20 @@
     height: 40px;
     background-color: black;
 }
+
+.spinner-overlay {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: grey;
+    opacity: .5;
+  }
+
+  .spiner-border {
+    z-index: 1000;
+  }
