@@ -1,5 +1,6 @@
 const { StandardFonts, rgb } = require('pdf-lib');
 const fs = require('fs');
+const path = require('path');
 const signer = require('node-signpdf');
 const {
     PDFDocument,
@@ -12,9 +13,11 @@ const {
 const SIGNATURE_LENGTH = 5540;
 const PDFArrayCustom = require('./PDFArrayCustom');
 
-const eSignDocs = async (filePath, pswd, certificate) => {
+const eSignDocs = async (filePath, pswd, certificate, dirRoot) => {
+    const certificateBuffer = fs.readFileSync(certificate);
+
     try {
-        const pdfBuffer = fs.readFileSync(filePath);
+        const pdfBuffer = fs.readFileSync(path.join('temp-files', dirRoot, filePath));
         const pdfDoc = await PDFDocument.load(pdfBuffer, { ignoreEncryption: true });
 
         const signatureFieldName = 'Documento assinado digitalmente por INSTITUTO DO CANCER DE LONDRINA';
@@ -64,10 +67,8 @@ const eSignDocs = async (filePath, pswd, certificate) => {
         });
         const widgetDictRef = pdfDoc.context.register(widgetDict);
 
-        // Add our signature widget to the first page
         pages[0].node.set(PDFName.of('Annots'), pdfDoc.context.obj([widgetDictRef]));
 
-        // Create an AcroForm object containing our signature widget
         pdfDoc.catalog.set(
             PDFName.of('AcroForm'),
             pdfDoc.context.obj({
@@ -83,7 +84,7 @@ const eSignDocs = async (filePath, pswd, certificate) => {
         let signedPdfBuffer;
 
         try {
-            signedPdfBuffer = signObj.sign(modifiedPdfBuffer, certificate, {
+            signedPdfBuffer = signObj.sign(modifiedPdfBuffer, certificateBuffer, {
                 passphrase: pswd,
             })
         } catch (error) {
@@ -91,12 +92,13 @@ const eSignDocs = async (filePath, pswd, certificate) => {
         }
 
         try {
-            fs.writeFileSync(path.join('static', 'signed'), signedPdfBuffer);            
+            console.log('filePath:', `signed/${dirRoot}/${filePath}`);
+            fs.writeFileSync(`signed/${dirRoot}/${filePath}`, signedPdfBuffer,  { recursive: true });
         } catch (error) {
             console.error('Error writing file:', error);
         }
 
-    } catch (error) {        
+    } catch (error) {
         const err = error.toString()
         if (err.includes('Invalid password')) {
             throw Error('Password inválido');
