@@ -9,10 +9,39 @@ const mimePFXfile = 'application/x-pkcs12';
 const mimeP12file = 'application/pkcs12';
 const mimePDFFile = 'application/pdf';
 
-const signAndZipFiles = async (req, res) => {
+export default class ProcessFiles {
+    constructor(req, res) {
+        this.req = req;
+        this.res = res;
+        this.certificate = [];
+        this.pdfs = [];
+        this.pswd = req.body.password;
+        this.tempFilesDir = path.join('temp-files', '/');
+        this.nameRootFileZip = "";
+    }
+}
+
+const processFiles = async (req, res) => {
     const certificate = [];
     const pdfs = [];
     const pswd = req.body.password;
+
+    // VALIADATE IF THE FILES ARE IN THE CORRECT FORMAT
+    
+
+    // UNZIP ALL FILES IN A ORDERED WAY TO THE TEMP-FILES FOLDER
+
+    // DIGITAL SIGN ALL FILES FROM TEM-FILE DIR AND CREATE A NEW DIR CALLED SIGNED
+
+    // ZIP ALL FILES FROM SIGNED DIR
+
+    // CREATE A ZIP FILE WITH ALL SIGNED FILES AND SAVE IT IN THE DOWNLOAD DIR
+
+    // DELETE ALL FILES FROM TEMP-FILES
+
+    // DELETE ALL FILES FROM SIGNED
+
+
     let nameRootFileZip = path.join('temp-files', '/');
     let nameZipFile;
 

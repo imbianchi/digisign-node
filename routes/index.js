@@ -18,7 +18,7 @@ let routes = app => {
 
     router.get('/download', downloadController.downloadSignedFiles)
 
-    router.post("/sign-and-zip-files", upload.any(), uploadController.signAndZipFiles);
+    router.post("/sign-and-zip-files", upload.any(), uploadController.processFiles);
 
     router.get("/delete-files", downloadController.eraseDownloadedFiles);
 
