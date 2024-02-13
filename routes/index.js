@@ -6,10 +6,11 @@ const downloadController = require("../controllers/download");
 const multer = require('multer');
 
 const storage = multer.diskStorage({
+    limits: { fileSize: 1024 * 1024 * 1024 * 10 }, // 10 GB
     destination: 'temp-files/',
     filename: (req, file, cb) => {
         cb(null, file.originalname)
-    }
+    },
 })
 const upload = multer({ storage });
 

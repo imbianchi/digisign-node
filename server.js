@@ -5,7 +5,7 @@ const initRoutes = require("./routes");
 const { eraseDirectory } = require('./utils/files');
 
 app.use(bodyParser.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true, limit: '10240mb' }));
 app.use(express.static(__dirname));
 initRoutes(app);
 
