@@ -9,6 +9,8 @@ const eraseDownloadedFiles = async (req, res) => {
     await eraseDirectory('./signed');
 
     await eraseDirectory('./static/download');
+
+    res.status(200).send('Files deleted');
 }
 
 const downloadSignedFiles = async (req, res) => {

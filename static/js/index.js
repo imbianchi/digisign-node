@@ -52,13 +52,40 @@ $(document).ready(function () {
     });
 
     $('#button-clear').click(function () {
-        document.getElementById('directoryInput').value = '';
-        document.getElementById('pfxFile').value = '';
-        document.getElementById('password').value = '';
+        $('.spinner-overlay').removeClass('hide');
 
-        $('#button-clear').addClass('hide');
-        $('#button-download').addClass('hide');
-        $('#button-sign').removeClass('hide');
+        $.ajax({
+            url: '/delete-files',
+            type: 'DELETE',
+            success: function (data) {
+                toastBootstrap.show()
+                $('#toast .toast-header strong').text('Success');
+                $('#toast .toast-body').text(data);
+                $('#toast .toast-header').css({
+                    'background-color': '#90CC90',
+                    'color': 'white'
+                })
+
+                document.getElementById('directoryInput').value = '';
+                document.getElementById('pfxFile').value = '';
+                document.getElementById('password').value = '';
+
+                $('#button-clear').addClass('hide');
+                $('#button-download').addClass('hide');
+                $('#button-sign').removeClass('hide');
+                $('.spinner-overlay').addClass('hide');
+            },
+            error: function (error) {
+                toastBootstrap.show()
+                $('#toast .toast-header').css({
+                    'background-color': 'tomato',
+                    'color': 'white'
+                })
+                $('#toast .toast-header strong').text(error.statusText);
+                $('#toast .toast-body').text(error.responseJSON.message);
+                $('.spinner-overlay').addClass('hide');
+            }
+        });
     });
 
     $('#button-download').click(function () {

@@ -20,7 +20,7 @@ let routes = app => {
 
     router.post("/process-files", upload.any(), uploadController.processFiles);
 
-    router.get("/delete-files", downloadController.eraseDownloadedFiles);
+    router.delete("/delete-files", downloadController.eraseDownloadedFiles);
 
     return app.use("/", router);
 };
