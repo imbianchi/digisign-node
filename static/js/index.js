@@ -1,10 +1,12 @@
 const toast = document.getElementById('toast')
 const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toast)
+let downloadFile = "";
 
 $(document).ready(function () {
     $('#uploadForm').submit(function (e) {
         e.preventDefault();
-        $('#spinner-overlay').removeClass('hide');
+        $('.spinner-overlay').removeClass('hide');
+        $('#button-sign').addClass('hide');
 
         const formData = new FormData(this);
 
@@ -17,6 +19,7 @@ $(document).ready(function () {
             success: async function (data) {
 
                 const { zipName } = data.data
+                downloadFile = zipName;
 
                 window.open('/download?zipToDownload=' + zipName);
 
@@ -32,12 +35,12 @@ $(document).ready(function () {
 
                 $('#button-clear').removeClass('hide');
                 $('#button-download').removeClass('hide');
-                $('#spinner-overlay').addClass('hide');
+                $('.spinner-overlay').addClass('hide');
             },
             error: function (error) {
                 toastBootstrap.show()
 
-                $('#spinner-overlay').addClass('hide');
+                $('.spinner-overlay').addClass('hide');
                 $('#toast .toast-header').css({
                     'background-color': 'tomato',
                     'color': 'white'
@@ -46,6 +49,59 @@ $(document).ready(function () {
                 $('#toast .toast-body').text(error.responseJSON.message);
             }
         });
+    });
+
+    $('#button-clear').click(function () {
+        document.getElementById('directoryInput').value = '';
+        document.getElementById('pfxFile').value = '';
+        document.getElementById('password').value = '';
+
+        $('#button-clear').addClass('hide');
+        $('#button-download').addClass('hide');
+        $('#button-sign').removeClass('hide');
+    });
+
+    $('#button-download').click(function () {
+        $('.spinner-overlay').removeClass('hide');
+
+        $.ajax({
+            url: '/download?zipToDownload=' + downloadFile,
+            type: 'GET',
+            success: function (data) {
+                toastBootstrap.show()
+                $('#toast .toast-header strong').text('Success');
+                $('#toast .toast-body').text(data.message);
+                $('#toast .toast-header').css({
+                    'background-color': '#90CC90',
+                    'color': 'white'
+                })
+
+                $('.spinner-overlay').addClass('hide');
+                $('#button-sign').addClass('hide');
+            },
+            error: function (error) {
+                toastBootstrap.show()
+                $('.spinner-overlay').addClass('hide');
+                $('#button-sign').removeClass('hide');
+
+                $('#toast .toast-header').css({
+                    'background-color': 'tomato',
+                    'color': 'white'
+                })
+                $('#toast .toast-header strong').text(error.statusText);
+                $('#toast .toast-body').text(error.responseJSON.message);
+            }
+        });
+
+        window.open('/download?zipToDownload=' + downloadFile);
+    });
+
+    $('#directoryInput').change(function () {
+        if (this.value) {
+            $('#button-sign').removeClass('hide');
+        } else {
+            $('#button-sign').addClass('hide');
+        }
     });
 
     $('[data-toggle="tooltip"]').tooltip();

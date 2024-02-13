@@ -37,4 +37,4 @@ next-env.d.ts
 temp-files
 files
 static/download
-signed
+signed/*
