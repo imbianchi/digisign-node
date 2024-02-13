@@ -10,6 +10,7 @@
     "server": "node -r dotenv/config server.js"
   },
   "dependencies": {
+    "adm-zip": "^0.5.10",
     "archiver": "^5.3.1",
     "body-parser": "^1.20.2",
     "bootstrap": "5.3.0",
