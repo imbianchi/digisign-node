@@ -1,5 +1,5 @@
 const fs = require('fs');
-const AdmZip = require('adm-zip');
+const NodeStreamZip = require('node-stream-zip');
 const path = require('path');
 var archiver = require('archiver');
 const { eSignDocs } = require('../utils/signFile');
@@ -12,35 +12,63 @@ let zipFilePath = '';
 let zipName = '';
 let dirToZipRoot = '';
 
-async function processZipEntries() {
-    const zip = new AdmZip(zipFilePath);
-    const entries = zip.getEntries();
+function startLoading(message) {
+    console.log("Streaming initiated at: ", new Date());
 
-    return new Promise((resolve, reject) => {
-        entries.forEach(entry => {
+    const loadingSymbols = ['\\', '|', '/', '-'];
+    let currentSymbolIndex = 0;
+    process.stdout.write(message);
+
+    const handle = setInterval(() => {
+        const symbol = loadingSymbols[currentSymbolIndex];
+        process.stdout.write(`\r${message} ${symbol}`);
+        currentSymbolIndex = (currentSymbolIndex + 1) % loadingSymbols.length;
+    }, 100);
+
+    return handle;
+}
+
+function stopLoading(handle, message) {
+    clearInterval(handle);
+    process.stdout.write(`\r${message}\n`);
+    console.log("Streaming finalized at: ", new Date());
+}
+
+async function processZipEntries() {
+    const zip = new NodeStreamZip.async({ file: zipFilePath });
+
+    try {
+        const entries = await zip.entries();
+
+        for (const entryName in entries) {
+            const entry = entries[entryName];
+
             if (dirToZipRoot === '') {
-                dirToZipRoot = entry.entryName.split('/')[0];
+                dirToZipRoot = entry.name.split('/')[0];
             }
 
             if (entry.isDirectory) {
-                const dirPath = path.join('temp-files', entry.entryName);
-                const dirSignedPath = path.join('signed', entry.entryName);
+                const dirPath = path.join('temp-files', entry.name);
+                const dirSignedPath = path.join('signed', entry.name);
 
-                fs.mkdirSync(dirPath, { recursive: true });
-                fs.mkdirSync(dirSignedPath, { recursive: true });
+                await fs.promises.mkdir(dirPath, { recursive: true });
+                await fs.promises.mkdir(dirSignedPath, { recursive: true });
             } else {
-                const filePath = path.join('temp-files', entry.entryName);
-                const data = entry.getData();
+                const filePath = path.join('temp-files', entry.name);
+                await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
 
-                fs.writeFileSync(filePath, data);
+                await zip.extract(entry.name, filePath);
             }
-        });
-
-        resolve(true);
-    });
+        }
+    } catch (error) {
+        console.error(`Error processing ZIP entries: ${error}`);
+        throw error;
+    } finally {
+        await zip.close();
+    }
 }
 
-async function process(files) {
+async function processFilesNames(files) {
     files.map(file => {
         if (file.mimetype === 'application/x-zip-compressed' || file.mimetype === 'application/zip') {
             zipFilePath = file.path;
@@ -142,7 +170,9 @@ async function zipFiles(nameZipFile, dirToZip) {
 const processFiles = async (req, res) => {
     pswd = req.body.password;
 
-    await process(req.files);
+    const handle = startLoading("Processing PDFs");
+
+    await processFilesNames(req.files);
 
     try {
         await validateFiles();
@@ -184,9 +214,7 @@ const processFiles = async (req, res) => {
         });
     }
 
-    // DELETE ALL FILES FROM TEMP-FILES
-
-    // DELETE ALL FILES FROM SIGNED
+    stopLoading(handle, "### PDFs processed. ###\n\n");
 
     setTimeout(() => {
         return res.status(200).json({
