@@ -16,6 +16,7 @@ $(document).ready(function () {
             data: formData,
             contentType: false,
             processData: false,
+            timeout: 0,
             success: async function (data) {
 
                 const { zipName } = data.data
@@ -56,6 +57,7 @@ $(document).ready(function () {
 
         $.ajax({
             url: '/delete-files',
+            timeout: 0,
             type: 'DELETE',
             success: function (data) {
                 toastBootstrap.show()
@@ -94,6 +96,7 @@ $(document).ready(function () {
         $.ajax({
             url: '/download?zipToDownload=' + downloadFile,
             type: 'GET',
+            timeout: 0,
             success: function (data) {
                 toastBootstrap.show()
                 $('#toast .toast-header strong').text('Success');
