@@ -55,8 +55,8 @@ async function processZipEntries() {
                 await fs.promises.mkdir(dirSignedPath, { recursive: true });
             } else {
                 const filePath = path.join('temp-files', entry.name);
-                await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
 
+                await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
                 await zip.extract(entry.name, filePath);
             }
         }
@@ -114,7 +114,6 @@ async function zipFiles(nameZipFile, dirToZip) {
         try {
             output = fs.createWriteStream(zipFilePath);
         } catch (error) {
-            console.log('Error creating zip file:', error);
             reject(error);
         }
 
@@ -123,6 +122,8 @@ async function zipFiles(nameZipFile, dirToZip) {
         });
 
         function addDirectory(dir) {
+
+            console.log('Adding directory:', dir);
             const files = fs.readdirSync(dir, { recursive: true });
 
             for (const file of files) {
