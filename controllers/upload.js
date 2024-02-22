@@ -209,7 +209,7 @@ const processFiles = async (req, res) => {
                 zipName
             }
         });
-    }, 2000);
+    }, 5000);
 }
 
 module.exports = {
