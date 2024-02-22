@@ -107,7 +107,7 @@ async function digitalSignPDFs(dirPath) {
     });
 }
 
-async function zipFiles(nameZipFile, dirToZip) {
+async function zipFiles(nameZipFile) {
     const zipFilePath = path.join('static', 'download', nameZipFile);
     let output;
 
@@ -122,27 +122,11 @@ async function zipFiles(nameZipFile, dirToZip) {
             zlib: { level: 9 }
         });
 
-        function addDirectory(dir) {
-
-            console.log('Adding directory:', dir);
-            const files = fs.readdirSync(dir, { recursive: true });
-
-            for (const file of files) {
-                const filePath = path.join(dir, file);
-                const stats = fs.statSync(filePath);
-
-                if (stats.isDirectory()) {
-                    zip.directory(file);
-                    addDirectory(filePath);
-                } else {
-                    if (dir === dirToZip) {
-                        zip.file(filePath, { name: file });
-                    }
-                }
-            }
+        try {
+            zip.directory(path.join('signed', dirToZipRoot), false);
+        } catch (error) {
+            reject(error);
         }
-
-        addDirectory(dirToZip);
 
         zip.pipe(output);
         zip.finalize();
@@ -207,7 +191,7 @@ const processFiles = async (req, res) => {
     }
 
     try {
-        await zipFiles(zipName, 'signed/' + dirToZipRoot);
+        await zipFiles(zipName);
     } catch (error) {
         console.error('Error zipping signed files:', error);
 
