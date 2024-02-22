@@ -13,11 +13,11 @@ const {
 const SIGNATURE_LENGTH = 5540;
 const PDFArrayCustom = require('./PDFArrayCustom');
 
-const eSignDocs = async (filePath, pswd, certificate, dirRoot) => {
+const eSignDocs = async (filePath, pswd, certificate, dirToSigned) => {
     const certificateBuffer = fs.readFileSync(certificate);
 
     try {
-        const pdfBuffer = fs.readFileSync(path.join('temp-files', dirRoot, filePath));
+        const pdfBuffer = fs.readFileSync(filePath);
         const pdfDoc = await PDFDocument.load(pdfBuffer, { ignoreEncryption: true });
 
         const signatureFieldName = 'Documento assinado digitalmente por INSTITUTO DO CANCER DE LONDRINA';
@@ -92,7 +92,7 @@ const eSignDocs = async (filePath, pswd, certificate, dirRoot) => {
         }
 
         try {
-            fs.writeFileSync(`signed/${dirRoot}/${filePath}`, signedPdfBuffer,  { recursive: true });
+            fs.writeFileSync(dirToSigned, signedPdfBuffer,  { recursive: true });
         } catch (error) {
             console.error('Error writing file:', error);
         }
@@ -102,6 +102,9 @@ const eSignDocs = async (filePath, pswd, certificate, dirRoot) => {
         if (err.includes('Invalid password')) {
             throw Error('Password inválido');
         }
+
+        console.error('Error signing file:', error);
+        throw Error(err);
     }
 }
 

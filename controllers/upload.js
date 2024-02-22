@@ -94,11 +94,12 @@ async function digitalSignPDFs(dirPath) {
         for (const file of files) {
             const filePath = path.join(dirPath, file);
             const stats = fs.statSync(filePath);
+            const dirToSigned = filePath.replace('temp-files', 'signed');
 
             if (stats.isDirectory()) {
                 await digitalSignPDFs(filePath);
             } else {
-                await eSignDocs(file, pswd, certificate[0].path, dirToZipRoot);
+                await eSignDocs(filePath, pswd, certificate[0].path, dirToSigned);
             }
         }
 
