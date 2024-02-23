@@ -17,12 +17,13 @@ $(document).ready(function () {
             contentType: false,
             processData: false,
             timeout: 0,
-            success: async function (data) {
-
-                const { zipName } = data.data
+            success: function (data) {
+                const { zipName } =  data.data
                 downloadFile = zipName;
 
-                window.open('/download?zipToDownload=' + zipName);
+                setTimeout(() => {
+                    window.open('/download?zipToDownload=' + zipName);
+                }, 2500);
 
                 toastBootstrap.show()
                 $('#toast .toast-header strong').text('Success');
