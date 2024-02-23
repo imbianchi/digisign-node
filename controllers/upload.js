@@ -109,19 +109,18 @@ async function digitalSignPDFs(dirPath) {
 
 async function zipFiles(nameZipFile) {
     const zipFilePath = path.join('static', 'download', nameZipFile);
+    const zip = archiver('zip', {
+        zlib: { level: 9 }
+    });
     let output;
 
-    new Promise((resolve, reject) => {
-        try {
-            output = fs.createWriteStream(zipFilePath);
-        } catch (error) {
-            reject(error);
-        }
+    try {
+        output = fs.createWriteStream(zipFilePath);
+    } catch (error) {
+        throw Error('Error creating zip file:', error.toString());
+    }
 
-        const zip = archiver('zip', {
-            zlib: { level: 9 }
-        });
-
+    return new Promise((resolve, reject) => {
         try {
             zip.directory(path.join('signed', dirToZipRoot), false);
         } catch (error) {
@@ -133,6 +132,7 @@ async function zipFiles(nameZipFile) {
 
         output.on('close', () => {
             console.log('Zip file created successfully!');
+            resolve(true);
         });
 
         output.on('end', function () {
@@ -141,15 +141,15 @@ async function zipFiles(nameZipFile) {
 
         output.on('error', function (err) {
             console.error('Error writing zip:', err);
+            reject(false);
         });
 
         output.on('warning', function (err) {
             if (err.code === 'ENOENT') {
                 console.log(err);
+                reject(false);
             }
         });
-
-        resolve();
     });
 }
 
@@ -190,8 +190,9 @@ const processFiles = async (req, res) => {
         });
     }
 
+    let zipIsFinished = false;
     try {
-        await zipFiles(zipName);
+        zipIsFinished = await zipFiles(zipName);
     } catch (error) {
         console.error('Error zipping signed files:', error);
 
@@ -200,16 +201,16 @@ const processFiles = async (req, res) => {
         });
     }
 
-    stopLoading(handle, "### PDFs processed. ###\n\n");
+    if (zipIsFinished) {
+        stopLoading(handle, "### PDFs processed. ###\n\n");
 
-    setTimeout(() => {
         return res.status(200).json({
             message: 'Files signed with success!',
             data: {
                 zipName
             }
         });
-    }, 5000);
+    }
 }
 
 module.exports = {

@@ -18,12 +18,10 @@ $(document).ready(function () {
             processData: false,
             timeout: 0,
             success: function (data) {
-                const { zipName } =  data.data
+                const { zipName } = data.data
                 downloadFile = zipName;
 
-                setTimeout(() => {
-                    window.open('/download?zipToDownload=' + zipName);
-                }, 2500);
+                window.open('/download?zipToDownload=' + zipName);
 
                 toastBootstrap.show()
                 $('#toast .toast-header strong').text('Success');
