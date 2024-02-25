@@ -21,7 +21,8 @@
     "node-signpdf": "^1.5.1",
     "node-stream-zip": "^1.15.0",
     "pdf-lib": "^1.17.1",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.0",
+    "ws": "^8.16.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.22"

@@ -34,7 +34,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-temp-files
+temp-files/*
 files
 static/download
 signed/*

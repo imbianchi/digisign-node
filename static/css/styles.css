@@ -2,7 +2,6 @@
     display: none !important;
 }
 
-
 .clean-files-button {
     background-color: #f2f2f2;
     border: none;
@@ -21,14 +20,6 @@
     background-color: #ddd;
 }
 
-.custom-file-input:lang(pt)~.custom-file-label::after {
-    content: "TEste";
-    color: black;
-    width: 100%;
-    height: 40px;
-    background-color: black;
-}
-
 .spinner-overlay {
     position: absolute;
     top: 0;
@@ -40,8 +31,8 @@
     align-items: center;
     background-color: grey;
     opacity: .5;
-  }
+}
 
-  .spiner-border {
+.spiner-border {
     z-index: 1000;
-  }
+}

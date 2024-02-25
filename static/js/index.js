@@ -1,11 +1,62 @@
 const toast = document.getElementById('toast')
 const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toast)
 let downloadFile = "";
+let messageProgress = "";
+
+
+const socket = new WebSocket('ws://localhost:8080');
+
+socket.addEventListener('message', function (event) {
+    const data = JSON.parse(event.data);
+
+    console.log('data', data);
+
+    msg = data.msg;
+    fileNumber = data.fileNumber;
+    totalFiles = data.totalFiles;
+    step = data.step;
+    steps = data.steps;
+
+    if (data.step === 1) {
+        $('#progress-bar-step-1').removeClass('hide');
+        $('#progress-bar-step-1 .progress-bar-step-1').css('width', fileNumber / totalFiles * 100 + '%');
+        $('#progress-bar-step-1 .progress-bar-step-1').attr('aria-valuetext', fileNumber);
+        $('#progress-bar-step-1 .progress-bar-step-1').attr('aria-valuemax', totalFiles);
+        $('.msg-progress-step-1 span').text(`Etapa ${step}: ${msg}`);
+
+        if (fileNumber === totalFiles) {
+            $('#progress-bar-step-1 .progress-bar-step-1').addClass('bg-success');
+        }
+    }
+
+    if (data.step === 2) {
+        $('#progress-bar-step-2').removeClass('hide');
+        $('#progress-bar-step-2 .progress-bar-step-2').css('width', fileNumber / totalFiles * 100 + '%');
+        $('#progress-bar-step-2 .progress-bar-step-2').attr('aria-valuetext', fileNumber);
+        $('#progress-bar-step-2 .progress-bar-step-2').attr('aria-valuemax', totalFiles);
+        $('.msg-progress-step-2 span').text(`Etapa ${step}: ${msg}`);
+
+        if (fileNumber === totalFiles) {
+            $('#progress-bar-step-2 .progress-bar-step-2').addClass('bg-success');
+        }
+    }
+
+    if (data.step === 3) {
+        $('#progress-bar-step-3').removeClass('hide');
+        $('#progress-bar-step-3 .progress-bar-step-3').css('width', fileNumber / totalFiles * 100 + '%');
+        $('#progress-bar-step-3 .progress-bar-step-3').attr('aria-valuetext', fileNumber);
+        $('#progress-bar-step-3 .progress-bar-step-3').attr('aria-valuemax', totalFiles);
+        $('.msg-progress-step-3 span').text(`Etapa ${step}: ${msg}`);
+
+        if (fileNumber === totalFiles) {
+            $('#progress-bar-step-3 .progress-bar-step-3').addClass('bg-success');
+        }
+    }
+});
 
 $(document).ready(function () {
     $('#uploadForm').submit(function (e) {
         e.preventDefault();
-        $('.spinner-overlay').removeClass('hide');
         $('#button-sign').addClass('hide');
 
         const formData = new FormData(this);
@@ -21,6 +72,8 @@ $(document).ready(function () {
                 const { zipName } = data.data
                 downloadFile = zipName;
 
+                progress = 100;
+
                 window.open('/download?zipToDownload=' + zipName);
 
                 toastBootstrap.show()
@@ -35,12 +88,10 @@ $(document).ready(function () {
 
                 $('#button-clear').removeClass('hide');
                 $('#button-download').removeClass('hide');
-                $('.spinner-overlay').addClass('hide');
             },
             error: function (error) {
                 toastBootstrap.show()
 
-                $('.spinner-overlay').addClass('hide');
                 $('#toast .toast-header').css({
                     'background-color': 'tomato',
                     'color': 'white'
@@ -52,6 +103,7 @@ $(document).ready(function () {
     });
 
     $('#button-clear').click(function () {
+        $('#progress-bar').addClass('hide');
         $('.spinner-overlay').removeClass('hide');
 
         $.ajax({
@@ -75,6 +127,11 @@ $(document).ready(function () {
                 $('#button-download').addClass('hide');
                 $('#button-sign').removeClass('hide');
                 $('.spinner-overlay').addClass('hide');
+                $('#progress-bar-step-1').addClass('hide');
+                $('#progress-bar-step-2').addClass('hide');
+                $('#progress-bar-step-3').addClass('hide');
+
+                location.reload();
             },
             error: function (error) {
                 toastBootstrap.show()
@@ -136,4 +193,6 @@ $(document).ready(function () {
     $('[data-toggle="tooltip"]').tooltip();
 
     $('.toast').toast()
+
+    $('.progres')
 });
