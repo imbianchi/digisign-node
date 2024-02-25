@@ -4,7 +4,7 @@ let downloadFile = "";
 let messageProgress = "";
 
 
-const socket = new WebSocket('ws://localhost:8081');
+const socket = new WebSocket('ws://localhost:4080');
 
 socket.addEventListener('message', function (event) {
     const data = JSON.parse(event.data);

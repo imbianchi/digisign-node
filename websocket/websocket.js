@@ -11,7 +11,7 @@ class GlobalWebSocket {
     }
 
     init() {
-        this.connection = new WebSocket.Server({ host: 'localhost', port: 8081 });
+        this.connection = new WebSocket.Server({ host: 'localhost', port: 4080 });
         GlobalWebSocket.instance = this;
     }
 
