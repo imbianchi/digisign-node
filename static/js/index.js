@@ -13,15 +13,16 @@ socket.addEventListener('open', function (event) {
 socket.addEventListener('message', function (event) {
     const data = JSON.parse(event.data);
 
-    console.log('data', data);
-
     msg = data.msg;
     fileNumber = data.fileNumber;
     totalFiles = data.totalFiles;
     step = data.step;
     steps = data.steps;
 
+    console.log(data);
+
     if (data.step === 1) {
+        $('.spinner-overlay').addClass('hide');
         $('#progress-bar-step-1').removeClass('hide');
         $('#progress-bar-step-1 .progress-bar-step-1').css('width', fileNumber / totalFiles * 100 + '%');
         $('#progress-bar-step-1 .progress-bar-step-1').attr('aria-valuetext', fileNumber);
@@ -61,6 +62,7 @@ socket.addEventListener('message', function (event) {
 $(document).ready(function () {
     $('#uploadForm').submit(function (e) {
         e.preventDefault();
+        $('.spinner-overlay').removeClass('hide');
         $('#button-sign').addClass('hide');
 
         const formData = new FormData(this);
