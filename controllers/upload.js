@@ -81,10 +81,10 @@ async function processZipEntries() {
     }
 }
 
+let fileNumber = 0;
 async function digitalSignPDFs(dirPath) {
     return new Promise(async (resolve, reject) => {
         const files = fs.readdirSync(dirPath, { recursive: true });
-        let fileNumber = 0;
 
         for (const file of files) {
             const filePath = path.join(dirPath, file);
