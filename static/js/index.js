@@ -6,6 +6,10 @@ let messageProgress = "";
 
 const socket = new WebSocket('ws://localhost:4080');
 
+socket.addEventListener('open', function (event) {
+    console.log('WebSocket is connected')
+});
+
 socket.addEventListener('message', function (event) {
     const data = JSON.parse(event.data);
 
