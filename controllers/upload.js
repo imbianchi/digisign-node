@@ -84,30 +84,36 @@ async function processZipEntries() {
 let fileNumber = 0;
 async function digitalSignPDFs(dirPath) {
     return new Promise(async (resolve, reject) => {
-        const files = fs.readdirSync(dirPath, { recursive: true });
 
-        for (const file of files) {
-            const filePath = path.join(dirPath, file);
-            const stats = fs.statSync(filePath);
-            const dirToSigned = filePath.replace('temp-files', 'signed');
+        async function digitalSignPDFsRecursive(dirPath) {
+            const files = fs.readdirSync(dirPath, { recursive: true });
 
-            if (stats.isDirectory()) {
-                digitalSignPDFs(filePath);
-            } else {
-                fileNumber++;
-                await eSignDocs(filePath, pswd, certificate[0].path, dirToSigned);
+            for (const file of files) {
+                const filePath = path.join(dirPath, file);
+                const stats = fs.statSync(filePath);
+                const dirToSigned = filePath.replace('temp-files', 'signed');
+
+                if (stats.isDirectory()) {
+                    digitalSignPDFsRecursive(filePath);
+                } else {
+                    fileNumber++;
+                    await eSignDocs(filePath, pswd, certificate[0].path, dirToSigned);
+
+                }
             }
+
+            globalWebSocket.sendMessage(JSON.stringify({
+                msg: 'Assinando arquivos...',
+                step: 2,
+                steps: 3,
+                totalFiles,
+                fileNumber,
+            }));
         }
 
-        globalWebSocket.sendMessage(JSON.stringify({
-            msg: 'Assinando arquivos...',
-            step: 2,
-            steps: 3,
-            totalFiles,
-            fileNumber,
-        }));
+        await digitalSignPDFsRecursive(dirPath)
 
-        resolve(true);
+        resolve();
     });
 }
 
@@ -140,7 +146,7 @@ async function zipFiles(nameZipFile) {
         zip.on('entry', function (entry) {
             if (entry.type === 'file') {
                 count++;
-                
+
                 globalWebSocket.sendMessage(JSON.stringify({
                     msg: 'Comprimindo e criando arquivo para download...',
                     step: 3,
