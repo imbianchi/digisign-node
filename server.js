@@ -10,9 +10,9 @@ app.use(express.static(__dirname));
 initRoutes(app);
 
 const server = require('http').Server(app);
-server.listen(4000,
+server.listen(3001,
     () => {
-        console.log('Server is running on port: 4000');
+        console.log('Server is running on port: 3001');
         eraseDirectory('./temp-files');
         eraseDirectory('./signed');
         eraseDirectory('./static/download');
