@@ -4,6 +4,7 @@ const path = require('path');
 const uploadController = require("../controllers/upload");
 const downloadController = require("../controllers/download");
 const multer = require('multer');
+const config = require('config');
 
 const storage = multer.diskStorage({
     limits: { fileSize: 1024 * 1024 * 1024 * 10 },
@@ -22,6 +23,11 @@ let routes = app => {
     router.post("/process-files", upload.any(), uploadController.processFiles);
 
     router.delete("/delete-files", downloadController.eraseDownloadedFiles);
+
+    router.get('/ws', (req, res) => res.send({
+        wsPort: config.get('websocket.port'),
+        wsHost: config.get('websocket.host')
+    }))
 
     return app.use("/", router);
 };

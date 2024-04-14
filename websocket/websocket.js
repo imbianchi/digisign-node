@@ -1,4 +1,5 @@
 const WebSocket = require('ws');
+const config = require('config');
 
 
 class GlobalWebSocket {
@@ -11,7 +12,7 @@ class GlobalWebSocket {
     }
 
     init() {
-        this.connection = new WebSocket.Server({ host: 'localhost', port: 4080 });
+        this.connection = new WebSocket.Server({ host: config.get('websocket.host'), port: config.get('websocket.port') });
         GlobalWebSocket.instance = this;
     }
 

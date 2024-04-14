@@ -1,65 +1,47 @@
 const toast = document.getElementById('toast')
 const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toast)
 let downloadFile = "";
-let messageProgress = "";
+let WS_HOST = "";
+let WS_PORT = "";
+let socket;
 
+const handleWebScoket = () => {
+    $.ajax({
+        url: '/ws',
+        type: 'GET',
+        success: function (data) {
+            socket = new WebSocket(`ws://${data.wsHost}:${data.wsPort}`);
 
-const socket = new WebSocket('ws://localhost:4080');
+            socket.addEventListener('open', function (event) {
+                console.log('WebSocket is connected')
+            });
 
-socket.addEventListener('open', function (event) {
-    console.log('WebSocket is connected')
-});
+            socket.addEventListener('message', function (event) {
+                const data = JSON.parse(event.data);
 
-socket.addEventListener('message', function (event) {
-    const data = JSON.parse(event.data);
+                msg = data.msg;
+                step = data.step;
+                steps = data.steps;
 
-    msg = data.msg;
-    fileNumber = data.fileNumber;
-    totalFiles = data.totalFiles;
-    step = data.step;
-    steps = data.steps;
+                $('.spinner-overlay').addClass('hide');
+                $('#progress-bar').removeClass('hide');
+                $('#progress-bar .progress-bar').css('width', step / steps * 100 + '%');
+                $('#progress-bar .progress-bar').attr('aria-valuetext', step);
+                $('#progress-bar .progress-bar').attr('aria-valuemax', steps);
+                $('.msg-progress span').text(`Etapa ${step} de ${steps}: ${msg}`);
 
-    console.log(data);
-
-    if (data.step === 1) {
-        $('.spinner-overlay').addClass('hide');
-        $('#progress-bar-step-1').removeClass('hide');
-        $('#progress-bar-step-1 .progress-bar-step-1').css('width', fileNumber / totalFiles * 100 + '%');
-        $('#progress-bar-step-1 .progress-bar-step-1').attr('aria-valuetext', fileNumber);
-        $('#progress-bar-step-1 .progress-bar-step-1').attr('aria-valuemax', totalFiles);
-        $('.msg-progress-step-1 span').text(`Etapa ${step}: ${msg}`);
-
-        if (fileNumber === totalFiles) {
-            $('#progress-bar-step-1 .progress-bar-step-1').addClass('bg-success');
-        }
-    }
-
-    if (data.step === 2) {
-        $('#progress-bar-step-2').removeClass('hide');
-        $('#progress-bar-step-2 .progress-bar-step-2').css('width', fileNumber / totalFiles * 100 + '%');
-        $('#progress-bar-step-2 .progress-bar-step-2').attr('aria-valuetext', fileNumber);
-        $('#progress-bar-step-2 .progress-bar-step-2').attr('aria-valuemax', totalFiles);
-        $('.msg-progress-step-2 span').text(`Etapa ${step}: ${msg}`);
-
-        if (fileNumber === totalFiles) {
-            $('#progress-bar-step-2 .progress-bar-step-2').addClass('bg-success');
-        }
-    }
-
-    if (data.step === 3) {
-        $('#progress-bar-step-3').removeClass('hide');
-        $('#progress-bar-step-3 .progress-bar-step-3').css('width', fileNumber / totalFiles * 100 + '%');
-        $('#progress-bar-step-3 .progress-bar-step-3').attr('aria-valuetext', fileNumber);
-        $('#progress-bar-step-3 .progress-bar-step-3').attr('aria-valuemax', totalFiles);
-        $('.msg-progress-step-3 span').text(`Etapa ${step}: ${msg}`);
-
-        if (fileNumber === totalFiles) {
-            $('#progress-bar-step-3 .progress-bar-step-3').addClass('bg-success');
-        }
-    }
-});
+                if (step === steps) {
+                    $('#progress-bar .progress-bar').addClass('bg-success');
+                }
+            });
+        },
+    });
+}
 
 $(document).ready(function () {
+
+    handleWebScoket();
+
     $('#uploadForm').submit(function (e) {
         e.preventDefault();
         $('.spinner-overlay').removeClass('hide');
@@ -77,8 +59,6 @@ $(document).ready(function () {
             success: function (data) {
                 const { zipName } = data.data
                 downloadFile = zipName;
-
-                progress = 100;
 
                 window.open('/download?zipToDownload=' + zipName);
 

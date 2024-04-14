@@ -34,17 +34,19 @@ async function validateFiles() {
     if (!pswd) throw new Error('No password was provided.');
 }
 
-let totalFiles = 0;
 async function processZipEntries() {
     const zip = new NodeStreamZip.async({ file: zipFilePath });
 
     try {
         const entries = await zip.entries();
-        const totalEntries = Object.entries(entries).length;
+        globalWebSocket.sendMessage(JSON.stringify({
+            msg: 'Extraindo arquivos...',
+            step: 1,
+            steps: 3,
+        }));
 
         for (const entryName in entries) {
             const entry = entries[entryName];
-            const index = Object.keys(entries).indexOf(entryName);
 
             if (dirToZipRoot === '') {
                 dirToZipRoot = entry.name.split('/')[0];
@@ -52,7 +54,7 @@ async function processZipEntries() {
 
             if (entry.isDirectory) {
                 const dirPath = path.join('temp-files', entry.name);
-                const dirSignedPath = path.join('signed', entry.name);
+                const dirSignedPath = path.join('static', 'signed', entry.name);
 
                 await fs.promises.mkdir(dirPath, { recursive: true });
                 await fs.promises.mkdir(dirSignedPath, { recursive: true });
@@ -61,16 +63,6 @@ async function processZipEntries() {
 
                 await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
                 await zip.extract(entry.name, filePath);
-
-                totalFiles++;
-
-                globalWebSocket.sendMessage(JSON.stringify({
-                    msg: 'Extraindo arquivos...',
-                    fileNumber: index + 1,
-                    totalFiles: totalEntries,
-                    step: 1,
-                    steps: 3,
-                }));
             }
         }
     } catch (error) {
@@ -81,9 +73,14 @@ async function processZipEntries() {
     }
 }
 
-let fileNumber = 0;
 async function digitalSignPDFs(dirPath) {
     return new Promise(async (resolve, reject) => {
+
+        globalWebSocket.sendMessage(JSON.stringify({
+            msg: 'Assinando arquivos...',
+            step: 2,
+            steps: 3,
+        }));
 
         async function digitalSignPDFsRecursive(dirPath) {
             const files = fs.readdirSync(dirPath, { recursive: true });
@@ -91,24 +88,14 @@ async function digitalSignPDFs(dirPath) {
             for (const file of files) {
                 const filePath = path.join(dirPath, file);
                 const stats = fs.statSync(filePath);
-                const dirToSigned = filePath.replace('temp-files', 'signed');
+                const dirToSigned = 'static/' + filePath.replace('temp-files', 'signed');
 
                 if (stats.isDirectory()) {
                     digitalSignPDFsRecursive(filePath);
                 } else {
-                    fileNumber++;
                     await eSignDocs(filePath, pswd, certificate[0].path, dirToSigned);
-
                 }
             }
-
-            globalWebSocket.sendMessage(JSON.stringify({
-                msg: 'Assinando arquivos...',
-                step: 2,
-                steps: 3,
-                totalFiles,
-                fileNumber,
-            }));
         }
 
         await digitalSignPDFsRecursive(dirPath)
@@ -118,7 +105,7 @@ async function digitalSignPDFs(dirPath) {
 }
 
 async function zipFiles(nameZipFile) {
-    const zipFilePath = path.join('static', 'download', nameZipFile);
+    const zipFilePath = path.join('static', 'download', 'signed-' + nameZipFile);
     const output = fs.createWriteStream(zipFilePath);
     const zip = archiver('zip', {
         zlib: { level: 9 }
@@ -127,6 +114,13 @@ async function zipFiles(nameZipFile) {
     return new Promise((resolve, reject) => {
         output.on('close', () => {
             console.log('Zip file created successfully!');
+
+            globalWebSocket.sendMessage(JSON.stringify({
+                msg: 'Comprimindo e criando arquivo para download...',
+                step: 3,
+                steps: 3,
+            }));
+
             resolve(true);
         });
 
@@ -142,24 +136,10 @@ async function zipFiles(nameZipFile) {
             }
         });
 
-        let count = 0;
-        zip.on('entry', function (entry) {
-            if (entry.type === 'file') {
-                count++;
-
-                globalWebSocket.sendMessage(JSON.stringify({
-                    msg: 'Comprimindo e criando arquivo para download...',
-                    step: 3,
-                    steps: 3,
-                    totalFiles,
-                    fileNumber: count,
-                }));
-            }
-        });
-
         zip.pipe(output);
+
         try {
-            zip.directory(path.join('signed', dirToZipRoot), false);
+            zip.directory(path.join('static', 'signed', dirToZipRoot), false);
             zip.finalize();
         } catch (error) {
             reject(error);
