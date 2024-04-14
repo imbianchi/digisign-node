@@ -8,6 +8,8 @@ module.exports = {
     websocket: {
         port: process.env.WS_PORT || 4080,
         host: process.env.WS_HOST || 'localhost',
+        clientPort: process.env.WS_PORT_CLIENT || 4080,
+        clientHost: process.env.WS_HOST_HOST || 'localhost',
     },
     storage: {
         temp: './temp-files',
