@@ -10,7 +10,7 @@ const handleWebScoket = () => {
         url: '/ws',
         type: 'GET',
         success: function (data) {
-            socket = new WebSocket(`ws://${data.wsHost}:${data.wsPort}`);
+            socket = new WebSocket(`wss://${data.wsHost}:${data.wsPort}`);
 
             socket.addEventListener('open', function (event) {
                 console.log('WebSocket is connected')

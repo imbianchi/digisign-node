@@ -25,8 +25,8 @@ let routes = app => {
     router.delete("/delete-files", downloadController.eraseDownloadedFiles);
 
     router.get('/ws', (req, res) => res.send({
-        wsPort: config.get('websocket.port'),
-        wsHost: config.get('websocket.host')
+        wsPort: config.get('websocket.clientPort'),
+        wsHost: config.get('websocket.clientHost')
     }))
 
     return app.use("/", router);
