@@ -40,7 +40,7 @@ const handleWebSocket = async () => {
 
 $(document).ready(function () {
 
-    handleWebScoket();
+    handleWebSocket();
 
     $('#uploadForm').submit(function (e) {
         e.preventDefault();
