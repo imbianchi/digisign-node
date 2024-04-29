@@ -7,7 +7,7 @@ let socket;
 
 const handleWebSocket = async () => {
     $.ajax({
-        url: '/ws',
+        url: '/wss',
         type: 'GET',
         success: async function (data) {
             socket = await new WebSocket(`wss://${data.wsHost}:${data.wsPort}`);
