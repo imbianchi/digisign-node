@@ -1,7 +1,6 @@
 const WebSocket = require('ws');
 const config = require('config');
 
-
 class GlobalWebSocket {
     constructor() {
         if (!GlobalWebSocket.instance) {
@@ -12,7 +11,15 @@ class GlobalWebSocket {
     }
 
     init() {
-        this.connection = new WebSocket.Server({ host: config.get('websocket.host'), port: config.get('websocket.port') });
+        this.connection = new WebSocket.Server({ port: config.get('websocket.port') });
+        this.connection.on('listening', () => {
+            console.log(`WebSocket server is running on port ${config.get('websocket.port')}`);
+        });
+
+        this.connection.on('connection', (ws) => {
+            console.log('WebSocket client connected');
+        });
+
         GlobalWebSocket.instance = this;
     }
 
