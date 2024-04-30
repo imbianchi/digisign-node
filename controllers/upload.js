@@ -42,7 +42,7 @@ async function processZipEntries() {
         globalWebSocket.sendMessage(JSON.stringify({
             msg: 'Extraindo arquivos...',
             step: 1,
-            steps: 3,
+            steps: 4,
         }));
 
         for (const entryName in entries) {
@@ -74,13 +74,14 @@ async function processZipEntries() {
 }
 
 async function digitalSignPDFs(dirPath) {
-    return new Promise(async (resolve, reject) => {
 
-        globalWebSocket.sendMessage(JSON.stringify({
-            msg: 'Assinando arquivos...',
-            step: 2,
-            steps: 3,
-        }));
+    globalWebSocket.sendMessage(JSON.stringify({
+        msg: 'Assinando arquivos...',
+        step: 2,
+        steps: 4,
+    }));
+
+    return new Promise(async (resolve, reject) => {
 
         async function digitalSignPDFsRecursive(dirPath) {
             const files = fs.readdirSync(dirPath, { recursive: true });
@@ -93,7 +94,12 @@ async function digitalSignPDFs(dirPath) {
                 if (stats.isDirectory()) {
                     digitalSignPDFsRecursive(filePath);
                 } else {
-                    await eSignDocs(filePath, pswd, certificate[0].path, dirToSigned);
+                    try {
+                        await eSignDocs(filePath, pswd, certificate[0].path, dirToSigned);
+                    } catch (error) {
+                        console.error(`Error signing file ${filePath}: ${error}`);
+                        reject(error);
+                    }
                 }
             }
         }
@@ -105,6 +111,13 @@ async function digitalSignPDFs(dirPath) {
 }
 
 async function zipFiles(nameZipFile) {
+
+    globalWebSocket.sendMessage(JSON.stringify({
+        msg: 'Comprimindo e criando arquivo para download...',
+        step: 3,
+        steps: 4,
+    }));
+
     const zipFilePath = path.join('static', 'download', 'signed-' + nameZipFile);
     const output = fs.createWriteStream(zipFilePath);
     const zip = archiver('zip', {
@@ -114,12 +127,6 @@ async function zipFiles(nameZipFile) {
     return new Promise((resolve, reject) => {
         output.on('close', () => {
             console.log('Zip file created successfully!');
-
-            globalWebSocket.sendMessage(JSON.stringify({
-                msg: 'Comprimindo e criando arquivo para download...',
-                step: 3,
-                steps: 3,
-            }));
 
             resolve(true);
         });
@@ -219,6 +226,11 @@ const processFiles = async (req, res) => {
 
     if (zipIsFinished) {
         stopLoading(handle, "### PDFs processed. ###\n\n");
+        globalWebSocket.sendMessage(JSON.stringify({
+            msg: 'Assinaturas concluidas com sucesso!',
+            step: 4,
+            steps: 4,
+        }));
 
         return res.status(200).json({
             message: 'Files signed with success!',

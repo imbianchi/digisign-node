@@ -6,7 +6,7 @@ const { eraseDirectory } = require('../utils/files');
 const eraseDownloadedFiles = async (req, res) => {
     await eraseDirectory('./temp-files');
 
-    await eraseDirectory('./signed');
+    await eraseDirectory('./static/signed');
 
     await eraseDirectory('./static/download');
 
